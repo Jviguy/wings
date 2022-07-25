@@ -10,14 +10,14 @@ import (
 	"github.com/df-mc/atomic"
 	"github.com/df-mc/dragonfly/server"
 )
-func New(server server.Server) wings {
+func New(server *server.Server) wings {
     return wings{*atomic.NewBool(false),sync.WaitGroup{}, server}
 }
 
 type wings struct {
     startedRountinue atomic.Bool
     wg sync.WaitGroup
-    server server.Server
+    server *server.Server
 }
 
 func (w wings) Executor(s string) {
