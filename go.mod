@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/brentp/intintmap v0.0.0-20190211203843-30dc0ade9af9 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/df-mc/goleveldb v1.1.9 // indirect
@@ -17,6 +18,7 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/klauspost/compress v1.15.1 // indirect
+	github.com/lithammer/fuzzysearch v1.1.5 // indirect
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect

@@ -2,8 +2,6 @@ package wings
 
 import (
 	"github.com/df-mc/dragonfly/server/cmd"
-	"github.com/df-mc/dragonfly/server/world"
-	"github.com/go-gl/mathgl/mgl64"
 	"github.com/sirupsen/logrus"
 	"strings"
 	"sync"
@@ -14,53 +12,32 @@ import (
 	"github.com/df-mc/dragonfly/server"
 )
 
-func New(server *server.Server, log *logrus.Logger) *wings {
+func New(server *server.Server, log *logrus.Logger, config Config) *wings {
+	if config.RegisterDefaults {
+		RegisterDefaults()
+	}
 	return &wings{
 		*atomic.NewBool(false),
 		sync.WaitGroup{},
 		server,
 		log,
 		make([]prompt.Suggest, 0),
-		&CmdlineSource{
+		&ConsoleSource{
 			server: server,
 			log:    log,
 		},
+		config,
 	}
 }
 
 type wings struct {
-	startedRountinue atomic.Bool
-	wg               sync.WaitGroup
-	server           *server.Server
-	log              *logrus.Logger
-	cmdsuggestions   []prompt.Suggest
-	source           *CmdlineSource
-}
-
-type CmdlineSource struct {
-	server *server.Server
-	log    *logrus.Logger
-}
-
-func (c *CmdlineSource) Name() string {
-	return "Console"
-}
-
-func (c *CmdlineSource) Position() mgl64.Vec3 {
-	return mgl64.Vec3{0, 0, 0}
-}
-
-func (c *CmdlineSource) SendCommandOutput(o *cmd.Output) {
-	for _, err := range o.Errors() {
-		c.log.Error(err)
-	}
-	for _, m := range o.Messages() {
-		c.log.Info(m)
-	}
-}
-
-func (c *CmdlineSource) World() *world.World {
-	return c.server.World()
+	started        atomic.Bool
+	wg             sync.WaitGroup
+	server         *server.Server
+	log            *logrus.Logger
+	cmdsuggestions []prompt.Suggest
+	source         *ConsoleSource
+	config         Config
 }
 
 func (w *wings) Executor(s string) {
@@ -101,24 +78,46 @@ func (w *wings) Complete(d prompt.Document) []prompt.Suggest {
 		return w.cmdsuggestions
 	}
 	//TODO: THIS IS PRESET UP FOR ARG SUGGESTIONS.
-	//args := strings.Split(d.TextBeforeCursor(), " ")
-	s := d.GetWordBeforeCursor()
-	if strings.HasPrefix(s, "-") {
-		//return optionCompleter(args, strings.HasPrefix(s, "--"))
+	args := strings.Split(d.TextBeforeCursor(), " ")
+	//if there is args
+	if len(args) > 1 {
+		name := args[0]
+		args = args[1:]
+
+		c, o := cmd.ByAlias(name)
+		if o {
+			as := make([]prompt.Suggest, 0)
+			if len(args) > 1 {
+				as = w.GenerateSubCommandSuggestions(c, args)
+			} else {
+				as = w.GenerateArgSuggestions(c)
+			}
+			s := make([]string, 0)
+			for _, x := range as {
+				s = append(s, x.Text)
+			}
+			_, d := FindLevenshtein(args[len(args)-1], s)
+			if d < 5 {
+				return prompt.FilterFuzzy(as, args[len(args)-1], true)
+			} else {
+				return as
+			}
+		}
 	}
 	return prompt.FilterHasPrefix(w.cmdsuggestions, d.GetWordBeforeCursor(), true)
 }
 
 func (w *wings) Start() error {
-	if !w.startedRountinue.CAS(false, true) {
+	if !w.started.CAS(false, true) {
 		panic("wings is already processing commands")
 	}
 	p := prompt.New(
 		w.Executor,
 		w.Complete,
-		prompt.OptionTitle("Dragonfly: A safe and fast MCBE server software"),
-		prompt.OptionPrefix("$ "),
+		prompt.OptionTitle(w.config.Title),
+		prompt.OptionPrefix(w.config.Prefix),
 		prompt.OptionPrefixTextColor(prompt.Yellow),
+		prompt.OptionMaxSuggestion(50),
 		prompt.OptionCompletionWordSeparator(completer.FilePathCompletionSeparator),
 	)
 	w.UpdateSuggestions()
