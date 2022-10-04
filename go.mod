@@ -3,11 +3,14 @@ module github.com/jviguy/wings
 go 1.18
 
 require (
+	github.com/c-bata/go-prompt v0.2.6
+	github.com/df-mc/atomic v1.10.0
+	github.com/df-mc/dragonfly v0.7.5
+)
+
+require (
 	github.com/brentp/intintmap v0.0.0-20190211203843-30dc0ade9af9 // indirect
-	github.com/c-bata/go-prompt v0.2.6 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/df-mc/atomic v1.10.0 // indirect
-	github.com/df-mc/dragonfly v0.7.5 // indirect
 	github.com/df-mc/goleveldb v1.1.9 // indirect
 	github.com/go-gl/mathgl v1.0.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -19,7 +22,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
 	github.com/muhammadmuzzammil1998/jsonc v1.0.0 // indirect
-	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/rogpeppe/go-internal v1.3.0 // indirect
 	github.com/sandertv/go-raknet v1.10.9 // indirect
