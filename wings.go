@@ -1,7 +1,10 @@
 package wings
 
 import (
-	"fmt"
+	"github.com/df-mc/dragonfly/server/cmd"
+	"github.com/df-mc/dragonfly/server/world"
+	"github.com/go-gl/mathgl/mgl64"
+	"github.com/sirupsen/logrus"
 	"strings"
 	"sync"
 
@@ -11,14 +14,53 @@ import (
 	"github.com/df-mc/dragonfly/server"
 )
 
-func New(server *server.Server) *wings {
-	return &wings{*atomic.NewBool(false), sync.WaitGroup{}, server}
+func New(server *server.Server, log *logrus.Logger) *wings {
+	return &wings{
+		*atomic.NewBool(false),
+		sync.WaitGroup{},
+		server,
+		log,
+		make([]prompt.Suggest, 0),
+		&CmdlineSource{
+			server: server,
+			log:    log,
+		},
+	}
 }
 
 type wings struct {
 	startedRountinue atomic.Bool
 	wg               sync.WaitGroup
 	server           *server.Server
+	log              *logrus.Logger
+	cmdsuggestions   []prompt.Suggest
+	source           *CmdlineSource
+}
+
+type CmdlineSource struct {
+	server *server.Server
+	log    *logrus.Logger
+}
+
+func (c *CmdlineSource) Name() string {
+	return "Console"
+}
+
+func (c *CmdlineSource) Position() mgl64.Vec3 {
+	return mgl64.Vec3{0, 0, 0}
+}
+
+func (c *CmdlineSource) SendCommandOutput(o *cmd.Output) {
+	for _, err := range o.Errors() {
+		c.log.Error(err)
+	}
+	for _, m := range o.Messages() {
+		c.log.Info(m)
+	}
+}
+
+func (c *CmdlineSource) World() *world.World {
+	return c.server.World()
 }
 
 func (w *wings) Executor(s string) {
@@ -26,16 +68,45 @@ func (w *wings) Executor(s string) {
 	if s == "" {
 		return
 	}
-	fmt.Println(s)
+	sp := strings.Split(s, " ")
+	name := sp[0]
+	args := sp[1:]
+	c, o := cmd.ByAlias(name)
+	if o {
+		c.Execute(strings.Join(args, " "), w.source)
+	} else {
+		w.log.Errorf("Unkown command: %s.", name)
+	}
+}
+
+func (w *wings) UpdateSuggestions() {
+	for name, c := range cmd.Commands() {
+		if !w.CommandSuggested(name) {
+			w.cmdsuggestions = append(w.cmdsuggestions, prompt.Suggest{Text: name, Description: c.Description()})
+		}
+	}
+}
+
+func (w *wings) CommandSuggested(name string) bool {
+	for _, suggest := range w.cmdsuggestions {
+		if suggest.Text == name {
+			return true
+		}
+	}
+	return false
 }
 
 func (w *wings) Complete(d prompt.Document) []prompt.Suggest {
-	s := []prompt.Suggest{
-		{Text: "users", Description: "Store the username and age"},
-		{Text: "articles", Description: "Store the article text posted by user"},
-		{Text: "comments", Description: "Store the text commented to articles"},
+	if d.TextBeforeCursor() == "" {
+		return w.cmdsuggestions
 	}
-	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
+	//TODO: THIS IS PRESET UP FOR ARG SUGGESTIONS.
+	//args := strings.Split(d.TextBeforeCursor(), " ")
+	s := d.GetWordBeforeCursor()
+	if strings.HasPrefix(s, "-") {
+		//return optionCompleter(args, strings.HasPrefix(s, "--"))
+	}
+	return prompt.FilterHasPrefix(w.cmdsuggestions, d.GetWordBeforeCursor(), true)
 }
 
 func (w *wings) Start() error {
@@ -50,6 +121,7 @@ func (w *wings) Start() error {
 		prompt.OptionPrefixTextColor(prompt.Yellow),
 		prompt.OptionCompletionWordSeparator(completer.FilePathCompletionSeparator),
 	)
+	w.UpdateSuggestions()
 	go p.Run()
 	return nil
 }

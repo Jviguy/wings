@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/df-mc/atomic v1.10.0
-	github.com/df-mc/dragonfly v0.7.5
+	github.com/df-mc/dragonfly v0.8.5
 )
 
 require (
@@ -24,8 +24,8 @@ require (
 	github.com/muhammadmuzzammil1998/jsonc v1.0.0 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/rogpeppe/go-internal v1.3.0 // indirect
-	github.com/sandertv/go-raknet v1.10.9 // indirect
-	github.com/sandertv/gophertunnel v1.22.2 // indirect
+	github.com/sandertv/go-raknet v1.12.0 // indirect
+	github.com/sandertv/gophertunnel v1.24.7 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
