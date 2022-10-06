@@ -117,7 +117,7 @@ func (w *wings) Start() error {
 		prompt.OptionTitle(w.config.Title),
 		prompt.OptionPrefix(w.config.Prefix),
 		prompt.OptionPrefixTextColor(prompt.Yellow),
-		prompt.OptionMaxSuggestion(50),
+		prompt.OptionMaxSuggestion(w.config.MaxSuggestions),
 		prompt.OptionCompletionWordSeparator(completer.FilePathCompletionSeparator),
 	)
 	w.UpdateSuggestions()
