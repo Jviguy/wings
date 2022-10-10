@@ -10,3 +10,5 @@ wings.New(server, log, wings.DefaultConfig()).Start()
 
 ## Preview
 ![IMAGE](https://media.discordapp.net/attachments/745099242904748153/1026840478693466223/unknown.png)
+![IMAGE](https://media.discordapp.net/attachments/745099242904748153/1026843198330515466/unknown.png)
+![IMAGE](https://media.discordapp.net/attachments/745099242904748153/1026850439850905610/unknown.png)
