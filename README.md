@@ -9,3 +9,4 @@ Using wings is simple. Start it after registering your commands and calling serv
 wings.New(server, log, wings.DefaultConfig()).Start()
 
 ## Preview
+![IMAGE](https://media.discordapp.net/attachments/745099242904748153/1026840478693466223/unknown.png)
